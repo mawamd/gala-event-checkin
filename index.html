@@ -5,70 +5,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event Check-In</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    .search-bar {
-      margin-bottom: 20px;
-    }
-    .search-bar input {
-      padding: 8px;
-      width: 300px;
-      font-size: 16px;
-    }
-    .table-block {
-      margin-bottom: 40px;
-    }
-    .table-title {
-      font-weight: bold;
-      font-size: 1.4em;
-      margin-bottom: 10px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    th, td {
-      padding: 10px;
-      text-align: center;
-      vertical-align: middle;
-      border: 1px solid #ccc;
-    }
-    .highlight {
-      background-color: yellow;
-    }
-    .table-highlight {
-      background-color: lightblue;
-    }
-    /* Modal styles */
-    #cardFormModal {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 2px solid #333;
-      padding: 20px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    }
-    #cardFormModal form {
-      display: flex;
-      flex-direction: column;
-    }
-    #cardFormModal input[type="text"], #cardFormModal input[type="checkbox"] {
-      margin-bottom: 10px;
-    }
-    #modalOverlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 9998;
-    }
-  </style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .search-bar {
+    margin-bottom: 20px;
+  }
+  .search-bar input {
+    padding: 8px;
+    width: 300px;
+    font-size: 16px;
+    background-color: #d0f0ff; /* Light blue background */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .table-block {
+    margin-bottom: 40px;
+  }
+  .table-title {
+    font-weight: bold;
+    font-size: 1.4em;
+    margin-bottom: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  th, td {
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #ccc;
+  }
+  .highlight {
+    background-color: yellow;
+  }
+  .table-highlight {
+    background-color: lightblue;
+  }
+  /* Modal styles */
+  #cardFormModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 2px solid #333;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  }
+  #cardFormModal form {
+    display: flex;
+    flex-direction: column;
+  }
+  #cardFormModal input[type="text"], #cardFormModal input[type="checkbox"] {
+    margin-bottom: 10px;
+  }
+  #modalOverlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+  }
+</style>
 </head>
 <body>
 
