@@ -41,6 +41,33 @@
     .table-highlight {
       background-color: lightblue;
     }
+    /* Modal styles */
+    #cardFormModal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #333;
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    #cardFormModal form {
+      display: flex;
+      flex-direction: column;
+    }
+    #cardFormModal input[type="text"], #cardFormModal input[type="checkbox"] {
+      margin-bottom: 10px;
+    }
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+    }
   </style>
 </head>
 <body>
@@ -53,8 +80,24 @@
 
   <div id="tablesContainer"></div>
 
+  <!-- Modal Overlay and Card Form -->
+  <div id="modalOverlay"></div>
+  <div id="cardFormModal">
+    <form id="cardForm">
+      <h2>Credit Card Authorization</h2>
+      <label>Name on Card: <input type="text" id="cardName" required></label>
+      <label>Credit Card Number: <input type="text" id="cardNumber" required></label>
+      <label>Expiration Date (MM/YY): <input type="text" id="cardExpiry" required></label>
+      <label>3 Digit PIN: <input type="text" id="cardPIN" required></label>
+      <label>Zip Code: <input type="text" id="cardZip" required></label>
+      <label><input type="checkbox" id="authorizeCheckbox" required>
+        I hereby authorize [Your Organization] to charge this card with my prior consent for any purchases at [Event Name] on [Date].
+      </label>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
   <script>
-    // 20 guests
     const guests = [
       { name: "Alice Smith", table: 1, checkedIn: false, cardOnFile: false },
       { name: "John Doe", table: 1, checkedIn: false, cardOnFile: false },
@@ -87,8 +130,6 @@
     });
 
     const tablesContainer = document.getElementById('tablesContainer');
-
-    // Save table title elements for easy lookup
     const tableTitles = {};
 
     for (const [tableNumber, guestList] of Object.entries(tables)) {
@@ -100,7 +141,7 @@
       tableTitle.textContent = `Table ${tableNumber}`;
       tableTitle.id = `table-title-${tableNumber}`;
       tableDiv.appendChild(tableTitle);
-      tableTitles[tableNumber] = tableTitle; // store it
+      tableTitles[tableNumber] = tableTitle;
 
       const table = document.createElement('table');
 
@@ -108,7 +149,7 @@
       guestList.forEach(guest => {
         const th = document.createElement('th');
         th.id = `th-${guest.name.replace(/\s+/g, '-')}`;
-        th.textContent = guest.name;
+        th.innerHTML = `<span ondblclick="openCardForm('${guest.name}')">${guest.name}</span>`;
         headerRow.appendChild(th);
       });
       table.appendChild(headerRow);
@@ -117,15 +158,9 @@
       guestList.forEach(guest => {
         const td = document.createElement('td');
         td.innerHTML = `
-          <label>
-            <input type="checkbox" onchange="toggleCheckIn('${guest.name}')">
-            Check In
-          </label>
+          <label><input type="checkbox" onchange="toggleCheckIn('${guest.name}')"> Check In</label>
           <br>
-          <label>
-            <input type="checkbox" onchange="toggleCard('${guest.name}')">
-            Add Card
-          </label>
+          <label><input type="checkbox" onchange="toggleCard('${guest.name}')"> Add Card</label>
         `;
         td.id = `td-${guest.name.replace(/\s+/g, '-')}`;
         checkInRow.appendChild(td);
@@ -142,11 +177,7 @@
         guest.checkedIn = !guest.checkedIn;
         const td = document.getElementById(`td-${name.replace(/\s+/g, '-')}`);
         if (td) {
-          if (guest.checkedIn) {
-            td.style.backgroundColor = "#d4f5d4"; // light green
-          } else {
-            td.style.backgroundColor = "";
-          }
+          td.style.backgroundColor = guest.checkedIn ? "#d4f5d4" : "";
         }
       }
     }
@@ -157,11 +188,9 @@
         guest.cardOnFile = !guest.cardOnFile;
         const th = document.getElementById(`th-${guest.name.replace(/\s+/g, '-')}`);
         if (th) {
-          if (guest.cardOnFile) {
-            th.innerHTML = `${guest.name} 💳`;
-          } else {
-            th.innerHTML = guest.name;
-          }
+          th.innerHTML = guest.cardOnFile 
+            ? `<span ondblclick="openCardForm('${guest.name}')">${guest.name} 💳</span>`
+            : `<span ondblclick="openCardForm('${guest.name}')">${guest.name}</span>`;
         }
       }
     }
@@ -169,31 +198,42 @@
     function searchGuest() {
       const input = document.getElementById('searchInput').value.toLowerCase();
       const ths = document.querySelectorAll('th');
-
-      ths.forEach(th => {
-        th.classList.remove('highlight');
-      });
-
-      Object.values(tableTitles).forEach(title => {
-        title.classList.remove('table-highlight');
-      });
+      ths.forEach(th => th.classList.remove('highlight'));
+      Object.values(tableTitles).forEach(title => title.classList.remove('table-highlight'));
 
       ths.forEach(th => {
         const rawName = th.textContent.replace("💳", "").trim().toLowerCase();
         if (input && rawName.includes(input)) {
           th.classList.add('highlight');
-
           const guest = guests.find(g => g.name.toLowerCase() === rawName);
           if (guest) {
-            const tableNumber = guest.table;
-            const tableTitle = tableTitles[tableNumber];
-            if (tableTitle) {
-              tableTitle.classList.add('table-highlight');
-            }
+            const tableTitle = tableTitles[guest.table];
+            if (tableTitle) tableTitle.classList.add('table-highlight');
           }
         }
       });
     }
+
+    // Modal handling
+    let activeGuest = null;
+    function openCardForm(guestName) {
+      activeGuest = guestName;
+      document.getElementById('modalOverlay').style.display = 'block';
+      document.getElementById('cardFormModal').style.display = 'block';
+    }
+
+    document.getElementById('cardForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert(`Card details saved for ${activeGuest}!`);
+      document.getElementById('modalOverlay').style.display = 'none';
+      document.getElementById('cardFormModal').style.display = 'none';
+      this.reset();
+    });
+
+    document.getElementById('modalOverlay').addEventListener('click', function() {
+      this.style.display = 'none';
+      document.getElementById('cardFormModal').style.display = 'none';
+    });
   </script>
 
 </body>
