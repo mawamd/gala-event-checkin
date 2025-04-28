@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Check-In</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .search-bar {
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      padding: 8px;
+      width: 300px;
+      font-size: 16px;
+    }
+    .table-block {
+      margin-bottom: 40px;
+    }
+    .table-title {
+      font-weight: bold;
+      font-size: 1.4em;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid #ccc;
+    }
+    .highlight {
+      background-color: yellow;
+    }
+    .table-highlight {
+      background-color: lightblue;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Event Check-In</h1>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" oninput="searchGuest()" placeholder="Search for a guest...">
+  </div>
+
+  <div id="tablesContainer"></div>
+
+  <script>
+    // 20 guests
+    const guests = [
+      { name: "Alice Smith", table: 1, checkedIn: false, cardOnFile: false },
+      { name: "John Doe", table: 1, checkedIn: false, cardOnFile: false },
+      { name: "Emily Johnson", table: 1, checkedIn: false, cardOnFile: false },
+      { name: "Michael Brown", table: 1, checkedIn: false, cardOnFile: false },
+      { name: "Sarah Davis", table: 2, checkedIn: false, cardOnFile: false },
+      { name: "David Wilson", table: 2, checkedIn: false, cardOnFile: false },
+      { name: "Nina Garcia", table: 2, checkedIn: false, cardOnFile: false },
+      { name: "Chris Martinez", table: 2, checkedIn: false, cardOnFile: false },
+      { name: "Brian Lee", table: 3, checkedIn: false, cardOnFile: false },
+      { name: "Sophia Taylor", table: 3, checkedIn: false, cardOnFile: false },
+      { name: "Daniel Anderson", table: 3, checkedIn: false, cardOnFile: false },
+      { name: "Olivia Thomas", table: 3, checkedIn: false, cardOnFile: false },
+      { name: "James Jackson", table: 4, checkedIn: false, cardOnFile: false },
+      { name: "Isabella White", table: 4, checkedIn: false, cardOnFile: false },
+      { name: "Benjamin Harris", table: 4, checkedIn: false, cardOnFile: false },
+      { name: "Mia Martin", table: 4, checkedIn: false, cardOnFile: false },
+      { name: "Jacob Thompson", table: 5, checkedIn: false, cardOnFile: false },
+      { name: "Amelia Robinson", table: 5, checkedIn: false, cardOnFile: false },
+      { name: "Elijah Clark", table: 5, checkedIn: false, cardOnFile: false },
+      { name: "Charlotte Lewis", table: 5, checkedIn: false, cardOnFile: false }
+    ];
+
+    const tables = {};
+    guests.forEach(guest => {
+      if (!tables[guest.table]) {
+        tables[guest.table] = [];
+      }
+      tables[guest.table].push(guest);
+    });
+
+    const tablesContainer = document.getElementById('tablesContainer');
+
+    // Save table title elements for easy lookup
+    const tableTitles = {};
+
+    for (const [tableNumber, guestList] of Object.entries(tables)) {
+      const tableDiv = document.createElement('div');
+      tableDiv.className = 'table-block';
+
+      const tableTitle = document.createElement('div');
+      tableTitle.className = 'table-title';
+      tableTitle.textContent = `Table ${tableNumber}`;
+      tableTitle.id = `table-title-${tableNumber}`;
+      tableDiv.appendChild(tableTitle);
+      tableTitles[tableNumber] = tableTitle; // store it
+
+      const table = document.createElement('table');
+
+      const headerRow = document.createElement('tr');
+      guestList.forEach(guest => {
+        const th = document.createElement('th');
+        th.id = `th-${guest.name.replace(/\s+/g, '-')}`;
+        th.textContent = guest.name;
+        headerRow.appendChild(th);
+      });
+      table.appendChild(headerRow);
+
+      const checkInRow = document.createElement('tr');
+      guestList.forEach(guest => {
+        const td = document.createElement('td');
+        td.innerHTML = `
+          <label>
+            <input type="checkbox" onchange="toggleCheckIn('${guest.name}')">
+            Check In
+          </label>
+          <br>
+          <label>
+            <input type="checkbox" onchange="toggleCard('${guest.name}')">
+            Add Card
+          </label>
+        `;
+        td.id = `td-${guest.name.replace(/\s+/g, '-')}`;
+        checkInRow.appendChild(td);
+      });
+      table.appendChild(checkInRow);
+
+      tableDiv.appendChild(table);
+      tablesContainer.appendChild(tableDiv);
+    }
+
+    function toggleCheckIn(name) {
+      const guest = guests.find(g => g.name === name);
+      if (guest) {
+        guest.checkedIn = !guest.checkedIn;
+        const td = document.getElementById(`td-${name.replace(/\s+/g, '-')}`);
+        if (td) {
+          if (guest.checkedIn) {
+            td.style.backgroundColor = "#d4f5d4"; // light green
+          } else {
+            td.style.backgroundColor = "";
+          }
+        }
+      }
+    }
+
+    function toggleCard(name) {
+      const guest = guests.find(g => g.name === name);
+      if (guest) {
+        guest.cardOnFile = !guest.cardOnFile;
+        const th = document.getElementById(`th-${guest.name.replace(/\s+/g, '-')}`);
+        if (th) {
+          if (guest.cardOnFile) {
+            th.innerHTML = `${guest.name} 💳`;
+          } else {
+            th.innerHTML = guest.name;
+          }
+        }
+      }
+    }
+
+    function searchGuest() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const ths = document.querySelectorAll('th');
+
+      ths.forEach(th => {
+        th.classList.remove('highlight');
+      });
+
+      Object.values(tableTitles).forEach(title => {
+        title.classList.remove('table-highlight');
+      });
+
+      ths.forEach(th => {
+        const rawName = th.textContent.replace("💳", "").trim().toLowerCase();
+        if (input && rawName.includes(input)) {
+          th.classList.add('highlight');
+
+          const guest = guests.find(g => g.name.toLowerCase() === rawName);
+          if (guest) {
+            const tableNumber = guest.table;
+            const tableTitle = tableTitles[tableNumber];
+            if (tableTitle) {
+              tableTitle.classList.add('table-highlight');
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
